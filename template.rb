@@ -93,9 +93,9 @@ module Gemfile
 end
 def add_gem(*all) Gemfile.add(*all); end
 
-@recipes = ["core", "git", "railsapps", "learn_rails", "rails_bootstrap", "rails_foundation", "rails_omniauth", "rails_devise", "rails_devise_roles", "rails_devise_pundit", "rails_signup_download", "rails_signup_thankyou", "rails_mailinglist_activejob", "rails_stripe_checkout", "rails_stripe_coupons", "rails_stripe_membership_saas", "setup", "locale", "readme", "gems", "tests", "email", "devise", "omniauth", "roles", "frontend", "pages", "init", "analytics", "deployment", "extras"]
-@prefs = {}
-@gems = []
+@recipes = ["core", "git", "rails_mailinglist_activejob", "rails_bootstrap", "rails_devise", "rails_devise_pundit", "rails_devise_roles", "setup", "locale", "email", "gems", "readme", "devise", "tests", "omniauth", "roles", "frontend", "pages", "init", "analytics", "extras", "deployment", "email_dev"]
+@prefs = { :database=>"postgresql", :templates=>"slim", :announcements => 'none' }
+@gems = ["factory_bot", "sentry-raven", "kaminari", "sidekiq", "slim", "whenever", "ransack"]
 @diagnostics_recipes = [["example"], ["setup"], ["railsapps"], ["gems", "setup"], ["gems", "readme", "setup"], ["extras", "gems", "readme", "setup"], ["example", "git"], ["git", "setup"], ["git", "railsapps"], ["gems", "git", "setup"], ["gems", "git", "readme", "setup"], ["extras", "gems", "git", "readme", "setup"], ["email", "extras", "frontend", "gems", "git", "init", "railsapps", "readme", "setup", "testing"], ["core", "email", "extras", "frontend", "gems", "git", "init", "railsapps", "readme", "setup", "testing"], ["core", "email", "extras", "frontend", "gems", "git", "init", "railsapps", "readme", "setup", "testing"], ["core", "email", "extras", "frontend", "gems", "git", "init", "railsapps", "readme", "setup", "testing"], ["email", "example", "extras", "frontend", "gems", "git", "init", "railsapps", "readme", "setup", "testing"], ["email", "example", "extras", "frontend", "gems", "git", "init", "railsapps", "readme", "setup", "testing"], ["email", "example", "extras", "frontend", "gems", "git", "init", "railsapps", "readme", "setup", "testing"], ["apps4", "core", "email", "extras", "frontend", "gems", "git", "init", "railsapps", "readme", "setup", "testing"], ["apps4", "core", "email", "extras", "frontend", "gems", "git", "init", "railsapps", "readme", "setup", "tests"], ["apps4", "core", "deployment", "email", "extras", "frontend", "gems", "git", "init", "railsapps", "readme", "setup", "testing"], ["apps4", "core", "deployment", "email", "extras", "frontend", "gems", "git", "init", "railsapps", "readme", "setup", "tests"], ["apps4", "core", "deployment", "devise", "email", "extras", "frontend", "gems", "git", "init", "omniauth", "pundit", "railsapps", "readme", "setup", "tests"]]
 @diagnostics_prefs = []
 diagnostics = {}
@@ -169,7 +169,7 @@ def copy_from(source, destination)
 end
 
 def copy_from_repo(filename, opts = {})
-  repo = 'https://raw.github.com/RailsApps/rails-composer/master/files/'
+  repo = 'https://raw.github.com/wilbert/rails-composer/master/files/'
   repo = opts[:repo] unless opts[:repo].nil?
   if (!opts[:prefs].nil?) && (!prefs.has_value? opts[:prefs])
     return
@@ -320,7 +320,7 @@ say_recipe 'git'
 say_wizard "initialize git"
 prefs[:git] = true unless prefs.has_key? :git
 if prefer :git, true
-  copy_from 'https://raw.github.com/RailsApps/rails-composer/master/files/gitignore.txt', '.gitignore'
+  copy_from 'https://raw.github.com/wilbert/rails-composer/master/files/gitignore.txt', '.gitignore'
   git :init
   git :add => '-A'
   git :commit => '-qm "rails_apps_composer: initial commit"'
@@ -357,70 +357,15 @@ end
 case Rails::VERSION::MAJOR.to_s
 when "5"
   prefs[:apps4] = multiple_choice "Build a starter application?",
-    [["Build a RailsApps example application", "railsapps"],
-    ["Contributed applications", "contributed_app"],
+    [["Bitzesty Rails applications", "contributed_app"],
     ["Custom application (experimental)", "none"]] unless prefs.has_key? :apps4
   case prefs[:apps4]
-    when 'railsapps'
-        prefs[:apps4] = multiple_choice "Choose a starter application.",
-        [["learn-rails", "learn-rails"],
-        ["rails-bootstrap", "rails-bootstrap"],
-        ["rails-foundation", "rails-foundation"],
-        ["rails-mailinglist-activejob", "rails-mailinglist-activejob"],
-        ["rails-omniauth", "rails-omniauth"],
-        ["rails-devise", "rails-devise"],
-        ["rails-devise-roles", "rails-devise-roles"],
-        ["rails-devise-pundit", "rails-devise-pundit"],
-        ["rails-signup-download", "rails-signup-download"],
-        ["rails-stripe-checkout", "rails-stripe-checkout"],
-        ["rails-stripe-coupons", "rails-stripe-coupons"]]
     when 'contributed_app'
       prefs[:apps4] = multiple_choice "Choose a starter application.",
         [["rails-signup-thankyou", "rails-signup-thankyou"]]
   end
-when "3"
-  say_wizard "Please upgrade to Rails 4.1 or newer."
-when "4"
-  case Rails::VERSION::MINOR.to_s
-  when "0"
-    say_wizard "Please upgrade to Rails 4.1 or newer."
-  else
-    prefs[:apps4] = multiple_choice "Build a starter application?",
-      [["Build a RailsApps example application", "railsapps"],
-      ["Contributed applications (none available)", "contributed_app"],
-      ["Custom application (experimental)", "none"]] unless prefs.has_key? :apps4
-    case prefs[:apps4]
-      when 'railsapps'
-        case Rails::VERSION::MINOR.to_s
-        when "2"
-          prefs[:apps4] = multiple_choice "Choose a starter application.",
-          [["learn-rails", "learn-rails"],
-          ["rails-bootstrap", "rails-bootstrap"],
-          ["rails-foundation", "rails-foundation"],
-          ["rails-mailinglist-activejob", "rails-mailinglist-activejob"],
-          ["rails-omniauth", "rails-omniauth"],
-          ["rails-devise", "rails-devise"],
-          ["rails-devise-roles", "rails-devise-roles"],
-          ["rails-devise-pundit", "rails-devise-pundit"],
-          ["rails-signup-download", "rails-signup-download"],
-          ["rails-stripe-checkout", "rails-stripe-checkout"],
-          ["rails-stripe-coupons", "rails-stripe-coupons"],
-          ["rails-stripe-membership-saas", "rails-stripe-membership-saas"]]
-        else
-          prefs[:apps4] = multiple_choice "Upgrade to Rails 4.2 for more choices.",
-          [["learn-rails", "learn-rails"],
-          ["rails-bootstrap", "rails-bootstrap"],
-          ["rails-foundation", "rails-foundation"],
-          ["rails-omniauth", "rails-omniauth"],
-          ["rails-devise", "rails-devise"],
-          ["rails-devise-roles", "rails-devise-roles"],
-          ["rails-devise-pundit", "rails-devise-pundit"]]
-        end
-      when 'contributed_app'
-        prefs[:apps4] = multiple_choice "No contributed applications are available.",
-          [["create custom application", "railsapps"]]
-    end
-  end
+else
+  say_wizard "Please upgrade to Rails 5 or newer."
 end
 
 unless prefs[:announcements]
@@ -551,244 +496,6 @@ end
 # >-------------------------- templates/recipe.erb ---------------------------end<
 
 # >-------------------------- templates/recipe.erb ---------------------------start<
-# >----------------------------[ rails_bootstrap ]----------------------------<
-@current_recipe = "rails_bootstrap"
-@before_configs["rails_bootstrap"].call if @before_configs["rails_bootstrap"]
-say_recipe 'rails_bootstrap'
-@configs[@current_recipe] = config
-# >----------------------- recipes/rails_bootstrap.rb ------------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/rails_bootstrap.rb
-
-if prefer :apps4, 'rails-bootstrap'
-  prefs[:authentication] = false
-  prefs[:authorization] = false
-  prefs[:dashboard] = 'none'
-  prefs[:better_errors] = true
-  prefs[:devise_modules] = false
-  prefs[:email] = 'none'
-  prefs[:git] = true
-  prefs[:local_env_file] = false
-  prefs[:pry] = false
-  prefs[:pages] = 'about'
-  prefs[:locale] = 'none'
-  prefs[:rubocop] = false
-  prefs[:frontend] = multiple_choice "Front-end framework?",
-    [["Bootstrap 4.0", "bootstrap4"], ["Bootstrap 3.3", "bootstrap3"]] unless prefs.has_key? :frontend
-  prefs[:rvmrc] = true
-end
-# >----------------------- recipes/rails_bootstrap.rb ------------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
-# >---------------------------[ rails_foundation ]----------------------------<
-@current_recipe = "rails_foundation"
-@before_configs["rails_foundation"].call if @before_configs["rails_foundation"]
-say_recipe 'rails_foundation'
-@configs[@current_recipe] = config
-# >----------------------- recipes/rails_foundation.rb -----------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/rails_foundation.rb
-
-if prefer :apps4, 'rails-foundation'
-  prefs[:authentication] = false
-  prefs[:authorization] = false
-  prefs[:dashboard] = 'none'
-  prefs[:better_errors] = true
-  prefs[:devise_modules] = false
-  prefs[:email] = 'none'
-  prefs[:frontend] = 'foundation5'
-  prefs[:git] = true
-  prefs[:local_env_file] = false
-  prefs[:pry] = false
-  prefs[:pages] = 'about'
-  prefs[:locale] = 'none'
-  prefs[:rubocop] = false
-  prefs[:rvmrc] = true
-end
-# >----------------------- recipes/rails_foundation.rb -----------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
-# >----------------------------[ rails_omniauth ]-----------------------------<
-@current_recipe = "rails_omniauth"
-@before_configs["rails_omniauth"].call if @before_configs["rails_omniauth"]
-say_recipe 'rails_omniauth'
-@configs[@current_recipe] = config
-# >------------------------ recipes/rails_omniauth.rb ------------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/rails_omniauth.rb
-
-if prefer :apps4, 'rails-omniauth'
-  prefs[:authentication] = 'omniauth'
-  prefs[:authorization] = 'none'
-  prefs[:dashboard] = 'none'
-  prefs[:better_errors] = true
-  prefs[:email] = 'none'
-  prefs[:git] = true
-  prefs[:local_env_file] = false
-  prefs[:pry] = false
-  prefs[:pages] = 'about+users'
-  prefs[:locale] = 'none'
-  prefs[:rubocop] = false
-  prefs[:rvmrc] = true
-end
-# >------------------------ recipes/rails_omniauth.rb ------------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
-# >-----------------------------[ rails_devise ]------------------------------<
-@current_recipe = "rails_devise"
-@before_configs["rails_devise"].call if @before_configs["rails_devise"]
-say_recipe 'rails_devise'
-@configs[@current_recipe] = config
-# >------------------------- recipes/rails_devise.rb -------------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/rails_devise.rb
-
-if prefer :apps4, 'rails-devise'
-  prefs[:authentication] = 'devise'
-  prefs[:authorization] = false
-  prefs[:dashboard] = 'none'
-  prefs[:better_errors] = true
-  prefs[:git] = true
-  prefs[:local_env_file] = false
-  prefs[:pry] = false
-  prefs[:pages] = 'about+users'
-  prefs[:locale] = 'none'
-  prefs[:rubocop] = false
-  prefs[:rvmrc] = true
-end
-# >------------------------- recipes/rails_devise.rb -------------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
-# >--------------------------[ rails_devise_roles ]---------------------------<
-@current_recipe = "rails_devise_roles"
-@before_configs["rails_devise_roles"].call if @before_configs["rails_devise_roles"]
-say_recipe 'rails_devise_roles'
-@configs[@current_recipe] = config
-# >---------------------- recipes/rails_devise_roles.rb ----------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/rails_devise_roles.rb
-
-if prefer :apps4, 'rails-devise-roles'
-  prefs[:authentication] = 'devise'
-  prefs[:authorization] = 'roles'
-  prefs[:better_errors] = true
-  prefs[:git] = true
-  prefs[:local_env_file] = false
-  prefs[:pry] = false
-  prefs[:pages] = 'about+users'
-  prefs[:locale] = 'none'
-  prefs[:rubocop] = false
-  prefs[:rvmrc] = true
-end
-# >---------------------- recipes/rails_devise_roles.rb ----------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
-# >--------------------------[ rails_devise_pundit ]--------------------------<
-@current_recipe = "rails_devise_pundit"
-@before_configs["rails_devise_pundit"].call if @before_configs["rails_devise_pundit"]
-say_recipe 'rails_devise_pundit'
-@configs[@current_recipe] = config
-# >--------------------- recipes/rails_devise_pundit.rb ----------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/rails_devise_pundit.rb
-
-if prefer :apps4, 'rails-devise-pundit'
-  prefs[:authentication] = 'devise'
-  prefs[:authorization] = 'pundit'
-  prefs[:better_errors] = true
-  prefs[:git] = true
-  prefs[:local_env_file] = false
-  prefs[:pry] = false
-  prefs[:pages] = 'about+users'
-  prefs[:locale] = 'none'
-  prefs[:rubocop] = false
-  prefs[:rvmrc] = true
-end
-# >--------------------- recipes/rails_devise_pundit.rb ----------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
-# >-------------------------[ rails_signup_download ]-------------------------<
-@current_recipe = "rails_signup_download"
-@before_configs["rails_signup_download"].call if @before_configs["rails_signup_download"]
-say_recipe 'rails_signup_download'
-@configs[@current_recipe] = config
-# >-------------------- recipes/rails_signup_download.rb ---------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/rails_signup_download.rb
-
-if prefer :apps4, 'rails-signup-download'
-  prefs[:authentication] = 'devise'
-  prefs[:authorization] = 'roles'
-  prefs[:better_errors] = true
-  prefs[:devise_modules] = false
-  prefs[:form_builder] = false
-  prefs[:git] = true
-  prefs[:local_env_file] = false
-  prefs[:pry] = false
-  prefs[:secrets] = ['mailchimp_list_id', 'mailchimp_api_key']
-  prefs[:pages] = 'about+users'
-  prefs[:locale] = 'none'
-  prefs[:rubocop] = false
-  prefs[:rvmrc] = true
-
-  # gems
-  add_gem 'gibbon'
-  add_gem 'sucker_punch'
-
-  stage_three do
-    say_wizard "recipe stage three"
-    repo = 'https://raw.github.com/RailsApps/rails-signup-download/master/'
-
-    # >-------------------------------[ Config ]---------------------------------<
-
-    copy_from_repo 'config/initializers/active_job.rb', :repo => repo
-
-    # >-------------------------------[ Models ]--------------------------------<
-
-    copy_from_repo 'app/models/user.rb', :repo => repo
-
-    # >-------------------------------[ Controllers ]--------------------------------<
-
-    copy_from_repo 'app/controllers/visitors_controller.rb', :repo => repo
-    copy_from_repo 'app/controllers/products_controller.rb', :repo => repo
-
-    # >-------------------------------[ Jobs ]---------------------------------<
-
-    copy_from_repo 'app/jobs/mailing_list_signup_job.rb', :repo => repo
-
-    # >-------------------------------[ Views ]--------------------------------<
-
-    copy_from_repo 'app/views/visitors/index.html.erb', :repo => repo
-    copy_from_repo 'app/views/products/product.pdf', :repo => repo
-
-    # >-------------------------------[ Routes ]--------------------------------<
-
-    copy_from_repo 'config/routes.rb', :repo => repo
-
-    # >-------------------------------[ Tests ]--------------------------------<
-
-    copy_from_repo 'spec/features/users/product_acquisition_spec.rb', :repo => repo
-    copy_from_repo 'spec/controllers/products_controller_spec.rb', :repo => repo
-
-  end
-end
-# >-------------------- recipes/rails_signup_download.rb ---------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
 # >-------------------------[ rails_signup_thankyou ]-------------------------<
 @current_recipe = "rails_signup_thankyou"
 @before_configs["rails_signup_thankyou"].call if @before_configs["rails_signup_thankyou"]
@@ -805,28 +512,28 @@ if prefer :apps4, 'rails-signup-thankyou'
   prefs[:dashboard] = 'none'
   prefs[:ban_spiders] = false
   prefs[:better_errors] = true
-  prefs[:database] = 'sqlite'
+  prefs[:database] = 'postgresql'
   prefs[:deployment] = 'none'
   prefs[:devise_modules] = false
   prefs[:dev_webserver] = 'puma'
   prefs[:email] = 'none'
-  prefs[:frontend] = 'bootstrap3'
+  prefs[:frontend] = 'bootstrap4'
   prefs[:layouts] = 'none'
   prefs[:pages] = 'none'
   prefs[:github] = false
   prefs[:git] = true
   prefs[:local_env_file] = false
   prefs[:prod_webserver] = 'same'
-  prefs[:pry] = false
+  prefs[:pry] = true
   prefs[:pages] = 'about+users'
-  prefs[:templates] = 'erb'
-  prefs[:tests] = 'none'
-  prefs[:locale] = 'none'
+  prefs[:templates] = 'slim'
+  prefs[:tests] = 'rspec'
+  prefs[:locale] = 'en-GB'
   prefs[:analytics] = 'none'
-  prefs[:rubocop] = false
-  prefs[:disable_turbolinks] = true
+  prefs[:rubocop] = true
+  prefs[:disable_turbolinks] = false
   prefs[:rvmrc] = true
-  prefs[:form_builder] = false
+  prefs[:form_builder] = 'false'
   prefs[:jquery] = 'gem'
 
   stage_three do
@@ -864,405 +571,6 @@ end
 # >-------------------- recipes/rails_signup_thankyou.rb ---------------------end<
 # >-------------------------- templates/recipe.erb ---------------------------end<
 
-# >-------------------------- templates/recipe.erb ---------------------------start<
-# >----------------------[ rails_mailinglist_activejob ]----------------------<
-@current_recipe = "rails_mailinglist_activejob"
-@before_configs["rails_mailinglist_activejob"].call if @before_configs["rails_mailinglist_activejob"]
-say_recipe 'rails_mailinglist_activejob'
-@configs[@current_recipe] = config
-# >----------------- recipes/rails_mailinglist_activejob.rb ------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/rails_mailinglist_activejob.rb
-
-if prefer :apps4, 'rails-mailinglist-activejob'
-  prefs[:authentication] = false
-  prefs[:authorization] = false
-  prefs[:dashboard] = 'none'
-  prefs[:better_errors] = true
-  prefs[:form_builder] = 'simple_form'
-  prefs[:git] = true
-  prefs[:local_env_file] = false
-  prefs[:pry] = false
-  prefs[:secrets] = ['mailchimp_list_id', 'mailchimp_api_key']
-  prefs[:pages] = 'about'
-  prefs[:locale] = 'none'
-  prefs[:rubocop] = false
-  prefs[:rvmrc] = true
-
-  # gems
-  add_gem 'gibbon'
-  add_gem 'high_voltage'
-  add_gem 'sucker_punch'
-
-  stage_two do
-    say_wizard "recipe stage two"
-    generate 'model Visitor email:string'
-  end
-
-  stage_three do
-    say_wizard "recipe stage three"
-    repo = 'https://raw.github.com/RailsApps/rails-mailinglist-activejob/master/'
-
-    # >-------------------------------[ Config ]---------------------------------<
-
-    copy_from_repo 'config/initializers/active_job.rb', :repo => repo
-
-    # >-------------------------------[ Models ]--------------------------------<
-
-    copy_from_repo 'app/models/visitor.rb', :repo => repo
-
-    # >-------------------------------[ Controllers ]--------------------------<
-
-    copy_from_repo 'app/controllers/visitors_controller.rb', :repo => repo
-
-    # >-------------------------------[ Jobs ]---------------------------------<
-
-    copy_from_repo 'app/jobs/mailing_list_signup_job.rb', :repo => repo
-
-    # >-------------------------------[ Views ]--------------------------------<
-
-    remove_file 'app/views/visitors/index.html.erb'
-    copy_from_repo 'app/views/visitors/new.html.erb', :repo => repo
-
-    # >-------------------------------[ Routes ]-------------------------------<
-
-    gsub_file 'config/routes.rb', /  root to: 'visitors#index'\n/, ''
-    inject_into_file 'config/routes.rb', "  root to: 'visitors#new'\n", :after => "routes.draw do\n"
-    route = '  resources :visitors, only: [:new, :create]'
-    inject_into_file 'config/routes.rb', route + "\n", :after => "routes.draw do\n"
-
-    # >-------------------------------[ Tests ]--------------------------------<
-
-    ### tests not implemented
-
-  end
-end
-# >----------------- recipes/rails_mailinglist_activejob.rb ------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
-# >-------------------------[ rails_stripe_checkout ]-------------------------<
-@current_recipe = "rails_stripe_checkout"
-@before_configs["rails_stripe_checkout"].call if @before_configs["rails_stripe_checkout"]
-say_recipe 'rails_stripe_checkout'
-@configs[@current_recipe] = config
-# >-------------------- recipes/rails_stripe_checkout.rb ---------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/rails_stripe_checkout.rb
-
-if prefer :apps4, 'rails-stripe-checkout'
-  prefs[:frontend] = 'bootstrap3'
-  prefs[:authentication] = 'devise'
-  prefs[:authorization] = 'roles'
-  prefs[:better_errors] = true
-  prefs[:devise_modules] = false
-  prefs[:form_builder] = false
-  prefs[:git] = true
-  prefs[:local_env_file] = false
-  prefs[:pry] = false
-  prefs[:secrets] = ['product_price',
-    'product_title',
-    'stripe_publishable_key',
-    'stripe_api_key',
-    'mailchimp_list_id',
-    'mailchimp_api_key']
-  prefs[:pages] = 'about+users'
-  prefs[:locale] = 'none'
-  prefs[:rubocop] = false
-  prefs[:rvmrc] = true
-
-  # gems
-  add_gem 'gibbon'
-  add_gem 'stripe'
-  add_gem 'sucker_punch'
-
-  stage_three do
-    say_wizard "recipe stage three"
-    repo = 'https://raw.github.com/RailsApps/rails-stripe-checkout/master/'
-
-    # >-------------------------------[ Config ]---------------------------------<
-
-    copy_from_repo 'config/initializers/active_job.rb', :repo => repo
-    copy_from_repo 'config/initializers/devise_permitted_parameters.rb', :repo => repo
-    copy_from_repo 'config/initializers/stripe.rb', :repo => repo
-
-    # >-------------------------------[ Assets ]--------------------------------<
-
-    copy_from_repo 'app/assets/images/rubyonrails.png', :repo => repo
-
-    # >-------------------------------[ Models ]--------------------------------<
-
-    copy_from_repo 'app/models/user.rb', :repo => repo
-
-    # >-------------------------------[ Controllers ]--------------------------------<
-
-    copy_from_repo 'app/controllers/visitors_controller.rb', :repo => repo
-    copy_from_repo 'app/controllers/products_controller.rb', :repo => repo
-    copy_from_repo 'app/controllers/registrations_controller.rb', :repo => repo
-
-    # >-------------------------------[ Jobs ]---------------------------------<
-
-    copy_from_repo 'app/jobs/mailing_list_signup_job.rb', :repo => repo
-
-    # >-------------------------------[ Views ]--------------------------------<
-
-    copy_from_repo 'app/views/devise/registrations/new.html.erb', :repo => repo
-    copy_from_repo 'app/views/visitors/_purchase.html.erb', :repo => repo
-    copy_from_repo 'app/views/visitors/index.html.erb', :repo => repo
-    copy_from_repo 'app/views/products/product.pdf', :repo => repo
-
-    # >-------------------------------[ Routes ]--------------------------------<
-
-    copy_from_repo 'config/routes.rb', :repo => repo
-
-    # >-------------------------------[ Tests ]--------------------------------<
-
-    ### tests not implemented
-
-  end
-end
-# >-------------------- recipes/rails_stripe_checkout.rb ---------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
-# >-------------------------[ rails_stripe_coupons ]--------------------------<
-@current_recipe = "rails_stripe_coupons"
-@before_configs["rails_stripe_coupons"].call if @before_configs["rails_stripe_coupons"]
-say_recipe 'rails_stripe_coupons'
-@configs[@current_recipe] = config
-# >--------------------- recipes/rails_stripe_coupons.rb ---------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/rails_stripe_coupons.rb
-
-if prefer :apps4, 'rails-stripe-coupons'
-  prefs[:frontend] = 'bootstrap3'
-  prefs[:authentication] = 'devise'
-  prefs[:authorization] = 'roles'
-  prefs[:better_errors] = true
-  prefs[:devise_modules] = false
-  prefs[:form_builder] = false
-  prefs[:git] = true
-  prefs[:local_env_file] = false
-  prefs[:pry] = false
-  prefs[:secrets] = ['stripe_publishable_key',
-    'stripe_api_key',
-    'product_price',
-    'product_title',
-    'mailchimp_list_id',
-    'mailchimp_api_key']
-  prefs[:pages] = 'about+users'
-  prefs[:locale] = 'none'
-  prefs[:rubocop] = false
-  prefs[:rvmrc] = true
-
-  # gems
-  add_gem 'gibbon'
-  add_gem 'stripe'
-  add_gem 'sucker_punch'
-
-  stage_three do
-    say_wizard "recipe stage three"
-    repo = 'https://raw.github.com/RailsApps/rails-stripe-coupons/master/'
-
-    # >-------------------------------[ Migrations ]---------------------------------<
-
-    generate 'migration AddStripeTokenToUsers stripe_token:string'
-    generate 'scaffold Coupon code role mailing_list_id list_group price:integer --no-test-framework --no-helper --no-assets --no-jbuilder'
-    generate 'migration AddCouponRefToUsers coupon:references'
-    run 'bundle exec rake db:migrate'
-
-    # >-------------------------------[ Config ]---------------------------------<
-
-    copy_from_repo 'config/initializers/active_job.rb', :repo => repo
-    copy_from_repo 'config/initializers/stripe.rb', :repo => repo
-
-    # >-------------------------------[ Assets ]--------------------------------<
-
-    copy_from_repo 'app/assets/images/rubyonrails.png', :repo => repo
-
-    # >-------------------------------[ Controllers ]--------------------------------<
-
-    copy_from_repo 'app/controllers/coupons_controller.rb', :repo => repo
-    copy_from_repo 'app/controllers/visitors_controller.rb', :repo => repo
-    copy_from_repo 'app/controllers/products_controller.rb', :repo => repo
-    copy_from_repo 'app/controllers/registrations_controller.rb', :repo => repo
-
-    # >-------------------------------[ Helpers ]--------------------------------<
-
-    copy_from_repo 'app/helpers/application_helper.rb', :repo => repo
-
-    # >-------------------------------[ Jobs ]---------------------------------<
-
-    copy_from_repo 'app/jobs/mailing_list_signup_job.rb', :repo => repo
-    copy_from_repo 'app/jobs/payment_job.rb', :repo => repo
-
-    # >-------------------------------[ Mailers ]--------------------------------<
-
-    copy_from_repo 'app/mailers/application_mailer.rb', :repo => repo
-    copy_from_repo 'app/mailers/payment_failure_mailer.rb', :repo => repo
-
-    # >-------------------------------[ Models ]--------------------------------<
-
-    copy_from_repo 'app/models/coupon.rb', :repo => repo
-    copy_from_repo 'app/models/user.rb', :repo => repo
-
-    # >-------------------------------[ Services ]---------------------------------<
-
-    copy_from_repo 'app/services/create_couponcodes_service.rb', :repo => repo
-    copy_from_repo 'app/services/mailing_list_signup_service.rb', :repo => repo
-    copy_from_repo 'app/services/make_payment_service.rb', :repo => repo
-
-    # >-------------------------------[ Views ]--------------------------------<
-
-    copy_from_repo 'app/views/coupons/_form.html.erb', :repo => repo
-    copy_from_repo 'app/views/coupons/edit.html.erb', :repo => repo
-    copy_from_repo 'app/views/coupons/index.html.erb', :repo => repo
-    copy_from_repo 'app/views/coupons/new.html.erb', :repo => repo
-    copy_from_repo 'app/views/coupons/show.html.erb', :repo => repo
-    copy_from_repo 'app/views/devise/registrations/_javascript.html.erb', :repo => repo
-    copy_from_repo 'app/views/devise/registrations/edit.html.erb', :repo => repo
-    copy_from_repo 'app/views/devise/registrations/new.html.erb', :repo => repo
-    copy_from_repo 'app/views/layouts/_navigation_links.html.erb', :repo => repo
-    copy_from_repo 'app/views/layouts/application.html.erb', :repo => repo
-    copy_from_repo 'app/views/layouts/mailer.html.erb', :repo => repo
-    copy_from_repo 'app/views/layouts/mailer.text.erb', :repo => repo
-    copy_from_repo 'app/views/pages/downloads.html.erb', :repo => repo
-    copy_from_repo 'app/views/payment_failure_mailer/failed_payment_email.html.erb', :repo => repo
-    copy_from_repo 'app/views/payment_failure_mailer/failed_payment_email.text.erb', :repo => repo
-    copy_from_repo 'app/views/users/show.html.erb', :repo => repo
-    copy_from_repo 'app/views/visitors/_purchase.html.erb', :repo => repo
-    copy_from_repo 'app/views/visitors/index.html.erb', :repo => repo
-    copy_from_repo 'app/views/products/product.pdf', :repo => repo
-    copy_from_repo 'public/offer.html', :repo => repo
-
-    # >-------------------------------[ Routes ]--------------------------------<
-
-    copy_from_repo 'config/routes.rb', :repo => repo
-
-    # >-------------------------------[ Tests ]--------------------------------<
-
-    ### tests not implemented
-
-  end
-end
-# >--------------------- recipes/rails_stripe_coupons.rb ---------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
-# >---------------------[ rails_stripe_membership_saas ]----------------------<
-@current_recipe = "rails_stripe_membership_saas"
-@before_configs["rails_stripe_membership_saas"].call if @before_configs["rails_stripe_membership_saas"]
-say_recipe 'rails_stripe_membership_saas'
-@configs[@current_recipe] = config
-# >----------------- recipes/rails_stripe_membership_saas.rb -----------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/rails_stripe_membership_saas.rb
-
-if prefer :apps4, 'rails-stripe-membership-saas'
-  prefs[:frontend] = 'bootstrap3'
-  prefs[:authentication] = 'devise'
-  prefs[:authorization] = 'roles'
-  prefs[:better_errors] = true
-  prefs[:devise_modules] = false
-  prefs[:form_builder] = false
-  prefs[:git] = true
-  prefs[:local_env_file] = false
-  prefs[:pry] = false
-  prefs[:disable_turbolinks] = true
-  prefs[:secrets] = ['stripe_publishable_key',
-    'stripe_api_key',
-    'mailchimp_list_id',
-    'mailchimp_api_key']
-  prefs[:pages] = 'about+users'
-  prefs[:locale] = 'none'
-  prefs[:rubocop] = false
-  prefs[:rvmrc] = true
-
-  # gems
-  add_gem 'gibbon'
-  add_gem 'payola-payments'
-  add_gem 'sucker_punch'
-
-  stage_three do
-    say_wizard "recipe stage three"
-    repo = 'https://raw.github.com/RailsApps/rails-stripe-membership-saas/master/'
-
-    # >-------------------------------[ Migrations ]---------------------------------<
-
-    generate 'payola:install'
-    generate 'model Plan name stripe_id interval amount:integer --no-test-framework'
-    generate 'migration AddPlanRefToUsers plan:references'
-    generate 'migration RemoveNameFromUsers name'
-    run 'bundle exec rake db:migrate'
-
-    # >-------------------------------[ Config ]---------------------------------<
-
-    copy_from_repo 'config/initializers/active_job.rb', :repo => repo
-    copy_from_repo 'config/initializers/payola.rb', :repo => repo
-    copy_from_repo 'db/seeds.rb', :repo => repo
-
-    # >-------------------------------[ Assets ]--------------------------------<
-
-    copy_from_repo 'app/assets/stylesheets/pricing.css.scss', :repo => repo
-
-    # >-------------------------------[ Controllers ]--------------------------------<
-
-    copy_from_repo 'app/controllers/application_controller.rb', :repo => repo
-    copy_from_repo 'app/controllers/content_controller.rb', :repo => repo
-    copy_from_repo 'app/controllers/visitors_controller.rb', :repo => repo
-    copy_from_repo 'app/controllers/products_controller.rb', :repo => repo
-    copy_from_repo 'app/controllers/registrations_controller.rb', :repo => repo
-
-    # >-------------------------------[ Jobs ]---------------------------------<
-
-    copy_from_repo 'app/jobs/mailing_list_signup_job.rb', :repo => repo
-
-    # >-------------------------------[ Mailers ]--------------------------------<
-
-    copy_from_repo 'app/mailers/application_mailer.rb', :repo => repo
-    copy_from_repo 'app/mailers/user_mailer.rb', :repo => repo
-
-    # >-------------------------------[ Models ]--------------------------------<
-
-    copy_from_repo 'app/models/plan.rb', :repo => repo
-    copy_from_repo 'app/models/user.rb', :repo => repo
-
-    # >-------------------------------[ Services ]---------------------------------<
-
-    copy_from_repo 'app/services/create_plan_service.rb', :repo => repo
-
-    # >-------------------------------[ Views ]--------------------------------<
-
-    copy_from_repo 'app/views/content/gold.html.erb', :repo => repo
-    copy_from_repo 'app/views/content/platinum.html.erb', :repo => repo
-    copy_from_repo 'app/views/content/silver.html.erb', :repo => repo
-    copy_from_repo 'app/views/devise/registrations/edit.html.erb', :repo => repo
-    copy_from_repo 'app/views/devise/registrations/new.html.erb', :repo => repo
-    copy_from_repo 'app/views/layouts/_navigation_links.html.erb', :repo => repo
-    copy_from_repo 'app/views/layouts/application.html.erb', :repo => repo
-    copy_from_repo 'app/views/layouts/mailer.html.erb', :repo => repo
-    copy_from_repo 'app/views/layouts/mailer.text.erb', :repo => repo
-    copy_from_repo 'app/views/user_mailer/expire_email.html.erb', :repo => repo
-    copy_from_repo 'app/views/user_mailer/expire_email.text.erb', :repo => repo
-    copy_from_repo 'app/views/visitors/index.html.erb', :repo => repo
-    copy_from_repo 'app/views/products/product.pdf', :repo => repo
-
-    # >-------------------------------[ Routes ]--------------------------------<
-
-    copy_from_repo 'config/routes.rb', :repo => repo
-
-    # >-------------------------------[ Tests ]--------------------------------<
-
-    ### tests not implemented
-
-  end
-end
-# >----------------- recipes/rails_stripe_membership_saas.rb -----------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
 
 # >-------------------------- templates/recipe.erb ---------------------------start<
 # >---------------------------------[ setup ]---------------------------------<
@@ -1480,180 +788,69 @@ end
 # >-------------------------- templates/recipe.erb ---------------------------end<
 
 # >-------------------------- templates/recipe.erb ---------------------------start<
-# >--------------------------------[ readme ]---------------------------------<
-@current_recipe = "readme"
-@before_configs["readme"].call if @before_configs["readme"]
-say_recipe 'readme'
+# >---------------------------------[ email ]---------------------------------<
+@current_recipe = "email"
+@before_configs["email"].call if @before_configs["email"]
+say_recipe 'email'
 @configs[@current_recipe] = config
-# >---------------------------- recipes/readme.rb ----------------------------start<
+# >---------------------------- recipes/email.rb -----------------------------start<
 
 # Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/readme.rb
+# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/email.rb
 
-stage_three do
-  say_wizard "recipe stage three"
-
-  # remove default READMEs
-  %w{
-    README
-    README.rdoc
-    doc/README_FOR_APP
-  }.each { |file| remove_file file }
-
-  # add diagnostics to README
-  create_file 'README', "#{app_name.humanize.titleize}\n================\n\n"
-  append_to_file 'README' do <<-TEXT
-Rails Composer is supported by developers who purchase our RailsApps tutorials.
-Need help? Ask on Stack Overflow with the tag 'railsapps.'
-Problems? Submit an issue: https://github.com/RailsApps/rails_apps_composer/issues
-Your application contains diagnostics in this README file.
-Please provide a copy of this README file when reporting any issues.
+stage_two do
+  say_wizard "recipe stage two"
+  unless prefer :email, 'none'
+    ## ACTIONMAILER CONFIG
+    dev_email_text = <<-TEXT
+  # ActionMailer Config
+  config.action_mailer.default_url_options = { :host => 'localhost:3000' }
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.raise_delivery_errors = true
+  # Send email in development mode?
+  config.action_mailer.perform_deliveries = true
+TEXT
+    prod_email_text = <<-TEXT
+  # ActionMailer Config
+  config.action_mailer.default_url_options = { :host => 'example.com' }
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.raise_delivery_errors = false
+TEXT
+    inject_into_file 'config/environments/development.rb', dev_email_text, :after => "config.assets.debug = true"
+    inject_into_file 'config/environments/production.rb', prod_email_text, :after => "config.active_support.deprecation = :notify"
+    gsub_file 'config/environments/production.rb', /'example.com'/, 'Rails.application.secrets.domain_name'
+    ## SMTP_SETTINGS
+    email_configuration_text = <<-TEXT
 \n
+  config.action_mailer.smtp_settings = {
+    address: "smtp.gmail.com",
+    port: 587,
+    domain: Rails.application.secrets.domain_name,
+    authentication: "plain",
+    enable_starttls_auto: true,
+    user_name: Rails.application.secrets.email_provider_username,
+    password: Rails.application.secrets.email_provider_password
+  }
 TEXT
-  end
-  append_to_file 'README' do <<-TEXT
-option  Build a starter application?
-choose  Enter your selection: [#{prefs[:apps4]}]
-option  Get on the mailing list for Rails Composer news?
-choose  Enter your selection: [#{prefs[:announcements]}]
-option  Web server for development?
-choose  Enter your selection: [#{prefs[:dev_webserver]}]
-option  Web server for production?
-choose  Enter your selection: [#{prefs[:prod_webserver]}]
-option  Database used in development?
-choose  Enter your selection: [#{prefs[:database]}]
-option  Template engine?
-choose  Enter your selection: [#{prefs[:templates]}]
-option  Test framework?
-choose  Enter your selection: [#{prefs[:tests]}]
-option  Continuous testing?
-choose  Enter your selection: [#{prefs[:continuous_testing]}]
-option  Front-end framework?
-choose  Enter your selection: [#{prefs[:frontend]}]
-option  Add support for sending email?
-choose  Enter your selection: [#{prefs[:email]}]
-option  Authentication?
-choose  Enter your selection: [#{prefs[:authentication]}]
-option  Devise modules?
-choose  Enter your selection: [#{prefs[:devise_modules]}]
-option  OmniAuth provider?
-choose  Enter your selection: [#{prefs[:omniauth_provider]}]
-option  Authorization?
-choose  Enter your selection: [#{prefs[:authorization]}]
-option  Use a form builder gem?
-choose  Enter your selection: [#{prefs[:form_builder]}]
-option  Add pages?
-choose  Enter your selection: [#{prefs[:pages]}]
-option  Set a locale?
-choose  Enter your selection: [#{prefs[:locale]}]
-option  Install page-view analytics?
-choose  Enter your selection: [#{prefs[:analytics]}]
-option  Add a deployment mechanism?
-choose  Enter your selection: [#{prefs[:deployment]}]
-option  Set a robots.txt file to ban spiders?
-choose  Enter your selection: [#{prefs[:ban_spiders]}]
-option  Create a GitHub repository? (y/n)
-choose  Enter your selection: [#{prefs[:github]}]
-option  Add gem and file for environment variables?
-choose  Enter your selection: [#{prefs[:local_env_file]}]
-option  Improve error reporting with 'better_errors' during development?
-choose  Enter your selection: [#{prefs[:better_errors]}]
-option  Use 'pry' as console replacement during development and test?
-choose  Enter your selection: [#{prefs[:pry]}]
-option  Use or create a project-specific rvm gemset?
-choose  Enter your selection: [#{prefs[:rvmrc]}]
-TEXT
-  end
-
-  create_file 'public/humans.txt' do <<-TEXT
-/* the humans responsible & colophon */
-/* humanstxt.org */
-
-
-/* TEAM */
-  <your title>: <your name>
-  Site:
-  Twitter:
-  Location:
-
-/* THANKS */
-  Daniel Kehoe (@rails_apps) for the RailsApps project
-
-/* SITE */
-  Standards: HTML5, CSS3
-  Components: jQuery
-  Software: Ruby on Rails
-
-/* GENERATED BY */
-Rails Composer: http://railscomposer.com/
-TEXT
-  end
-
-  remove_file 'README.md'
-  create_file 'README.md', "#{app_name.humanize.titleize}\n================\n\n"
-
-  if prefer :deployment, 'heroku'
-    append_to_file 'README.md' do <<-TEXT
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
-TEXT
+    inject_into_file 'config/environments/development.rb', email_configuration_text, :after => "config.assets.debug = true"
+    inject_into_file 'config/environments/production.rb', email_configuration_text, :after => "config.active_support.deprecation = :notify"
+    case prefs[:email]
+      when 'sendgrid'
+        gsub_file 'config/environments/development.rb', /smtp.gmail.com/, 'smtp.sendgrid.net'
+        gsub_file 'config/environments/production.rb', /smtp.gmail.com/, 'smtp.sendgrid.net'
+      when 'mandrill'
+        gsub_file 'config/environments/development.rb', /smtp.gmail.com/, 'smtp.mandrillapp.com'
+        gsub_file 'config/environments/production.rb', /smtp.gmail.com/, 'smtp.mandrillapp.com'
+        gsub_file 'config/environments/development.rb', /email_provider_password/, 'email_provider_apikey'
+        gsub_file 'config/environments/production.rb', /email_provider_password/, 'email_provider_apikey'
     end
   end
-
-  append_to_file 'README.md' do <<-TEXT
-This application was generated with the [rails_apps_composer](https://github.com/RailsApps/rails_apps_composer) gem
-provided by the [RailsApps Project](http://railsapps.github.io/).
-
-Rails Composer is supported by developers who purchase our RailsApps tutorials.
-
-Problems? Issues?
------------
-
-Need help? Ask on Stack Overflow with the tag 'railsapps.'
-
-Your application contains diagnostics in the README file. Please provide a copy of the README file when reporting any issues.
-
-If the application doesn't work as expected, please [report an issue](https://github.com/RailsApps/rails_apps_composer/issues)
-and include the diagnostics.
-
-Ruby on Rails
--------------
-
-This application requires:
-
-- Ruby #{RUBY_VERSION}
-- Rails #{Rails::VERSION::STRING}
-
-Learn more about [Installing Rails](http://railsapps.github.io/installing-rails.html).
-
-Getting Started
----------------
-
-Documentation and Support
--------------------------
-
-Issues
--------------
-
-Similar Projects
-----------------
-
-Contributing
-------------
-
-Credits
--------
-
-License
--------
-TEXT
-  end
-
+  ### GIT
   git :add => '-A' if prefer :git, true
-  git :commit => '-qm "rails_apps_composer: add README files"' if prefer :git, true
-
+  git :commit => '-qm "rails_apps_composer: set email accounts"' if prefer :git, true
 end
-# >---------------------------- recipes/readme.rb ----------------------------end<
+# >---------------------------- recipes/email.rb -----------------------------end<
 # >-------------------------- templates/recipe.erb ---------------------------end<
 
 # >-------------------------- templates/recipe.erb ---------------------------start<
@@ -1950,6 +1147,218 @@ end
 # >-------------------------- templates/recipe.erb ---------------------------end<
 
 # >-------------------------- templates/recipe.erb ---------------------------start<
+# >--------------------------------[ readme ]---------------------------------<
+@current_recipe = "readme"
+@before_configs["readme"].call if @before_configs["readme"]
+say_recipe 'readme'
+@configs[@current_recipe] = config
+# >---------------------------- recipes/readme.rb ----------------------------start<
+
+# Application template recipe for the rails_apps_composer. Change the recipe here:
+# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/readme.rb
+
+stage_three do
+  say_wizard "recipe stage three"
+
+  # remove default READMEs
+  %w{
+    README
+    README.rdoc
+    doc/README_FOR_APP
+  }.each { |file| remove_file file }
+
+  # add diagnostics to README
+  create_file 'README', "#{app_name.humanize.titleize}\n================\n\n"
+  append_to_file 'README' do <<-TEXT
+Rails Composer is supported by developers who purchase our RailsApps tutorials.
+Need help? Ask on Stack Overflow with the tag 'railsapps.'
+Problems? Submit an issue: https://github.com/RailsApps/rails_apps_composer/issues
+Your application contains diagnostics in this README file.
+Please provide a copy of this README file when reporting any issues.
+\n
+TEXT
+  end
+  append_to_file 'README' do <<-TEXT
+option  Build a starter application?
+choose  Enter your selection: [#{prefs[:apps4]}]
+option  Get on the mailing list for Rails Composer news?
+choose  Enter your selection: [#{prefs[:announcements]}]
+option  Web server for development?
+choose  Enter your selection: [#{prefs[:dev_webserver]}]
+option  Web server for production?
+choose  Enter your selection: [#{prefs[:prod_webserver]}]
+option  Database used in development?
+choose  Enter your selection: [#{prefs[:database]}]
+option  Template engine?
+choose  Enter your selection: [#{prefs[:templates]}]
+option  Test framework?
+choose  Enter your selection: [#{prefs[:tests]}]
+option  Continuous testing?
+choose  Enter your selection: [#{prefs[:continuous_testing]}]
+option  Front-end framework?
+choose  Enter your selection: [#{prefs[:frontend]}]
+option  Add support for sending email?
+choose  Enter your selection: [#{prefs[:email]}]
+option  Authentication?
+choose  Enter your selection: [#{prefs[:authentication]}]
+option  Devise modules?
+choose  Enter your selection: [#{prefs[:devise_modules]}]
+option  OmniAuth provider?
+choose  Enter your selection: [#{prefs[:omniauth_provider]}]
+option  Authorization?
+choose  Enter your selection: [#{prefs[:authorization]}]
+option  Use a form builder gem?
+choose  Enter your selection: [#{prefs[:form_builder]}]
+option  Add pages?
+choose  Enter your selection: [#{prefs[:pages]}]
+option  Set a locale?
+choose  Enter your selection: [#{prefs[:locale]}]
+option  Install page-view analytics?
+choose  Enter your selection: [#{prefs[:analytics]}]
+option  Add a deployment mechanism?
+choose  Enter your selection: [#{prefs[:deployment]}]
+option  Set a robots.txt file to ban spiders?
+choose  Enter your selection: [#{prefs[:ban_spiders]}]
+option  Create a GitHub repository? (y/n)
+choose  Enter your selection: [#{prefs[:github]}]
+option  Add gem and file for environment variables?
+choose  Enter your selection: [#{prefs[:local_env_file]}]
+option  Improve error reporting with 'better_errors' during development?
+choose  Enter your selection: [#{prefs[:better_errors]}]
+option  Use 'pry' as console replacement during development and test?
+choose  Enter your selection: [#{prefs[:pry]}]
+option  Use or create a project-specific rvm gemset?
+choose  Enter your selection: [#{prefs[:rvmrc]}]
+TEXT
+  end
+
+  create_file 'public/humans.txt' do <<-TEXT
+/* the humans responsible & colophon */
+/* humanstxt.org */
+
+
+/* TEAM */
+  <your title>: <your name>
+  Site:
+  Twitter:
+  Location:
+
+/* THANKS */
+  Daniel Kehoe (@rails_apps) for the RailsApps project
+
+/* SITE */
+  Standards: HTML5, CSS3
+  Components: jQuery
+  Software: Ruby on Rails
+
+/* GENERATED BY */
+Rails Composer: http://railscomposer.com/
+TEXT
+  end
+
+  remove_file 'README.md'
+  create_file 'README.md', "#{app_name.humanize.titleize}\n================\n\n"
+
+  if prefer :deployment, 'heroku'
+    append_to_file 'README.md' do <<-TEXT
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
+TEXT
+    end
+  end
+
+  append_to_file 'README.md' do <<-TEXT
+This application was generated with the [rails_apps_composer](https://github.com/RailsApps/rails_apps_composer) gem
+provided by the [RailsApps Project](http://railsapps.github.io/).
+
+Rails Composer is supported by developers who purchase our RailsApps tutorials.
+
+Problems? Issues?
+-----------
+
+Need help? Ask on Stack Overflow with the tag 'railsapps.'
+
+Your application contains diagnostics in the README file. Please provide a copy of the README file when reporting any issues.
+
+If the application doesn't work as expected, please [report an issue](https://github.com/RailsApps/rails_apps_composer/issues)
+and include the diagnostics.
+
+Ruby on Rails
+-------------
+
+This application requires:
+
+- Ruby #{RUBY_VERSION}
+- Rails #{Rails::VERSION::STRING}
+
+Learn more about [Installing Rails](http://railsapps.github.io/installing-rails.html).
+
+Getting Started
+---------------
+
+Documentation and Support
+-------------------------
+
+Issues
+-------------
+
+Similar Projects
+----------------
+
+Contributing
+------------
+
+Credits
+-------
+
+License
+-------
+TEXT
+  end
+
+  git :add => '-A' if prefer :git, true
+  git :commit => '-qm "rails_apps_composer: add README files"' if prefer :git, true
+
+end
+# >---------------------------- recipes/readme.rb ----------------------------end<
+# >-------------------------- templates/recipe.erb ---------------------------end<
+
+# >-------------------------- templates/recipe.erb ---------------------------start<
+# >--------------------------------[ devise ]---------------------------------<
+@current_recipe = "devise"
+@before_configs["devise"].call if @before_configs["devise"]
+say_recipe 'devise'
+@configs[@current_recipe] = config
+# >---------------------------- recipes/devise.rb ----------------------------start<
+
+# Application template recipe for the rails_apps_composer. Change the recipe here:
+# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/devise.rb
+
+stage_two do
+  say_wizard "recipe stage two"
+  if prefer :authentication, 'devise'
+    # prevent logging of password_confirmation
+    gsub_file 'config/initializers/filter_parameter_logging.rb', /:password/, ':password, :password_confirmation'
+    generate 'devise:install'
+    generate 'devise_invitable:install' if prefer :devise_modules, 'invitable'
+    generate 'devise user' # create the User model
+    unless :apps4.to_s.include? 'rails-stripe-'
+      generate 'migration AddNameToUsers name:string'
+    end
+    if (prefer :devise_modules, 'confirmable') || (prefer :devise_modules, 'invitable')
+      gsub_file 'app/models/user.rb', /:registerable,/, ":registerable, :confirmable,"
+      generate 'migration AddConfirmableToUsers confirmation_token:string confirmed_at:datetime confirmation_sent_at:datetime unconfirmed_email:string'
+    end
+    run 'bundle exec rake db:migrate'
+  end
+  ### GIT ###
+  git :add => '-A' if prefer :git, true
+  git :commit => '-qm "rails_apps_composer: devise"' if prefer :git, true
+end
+# >---------------------------- recipes/devise.rb ----------------------------end<
+# >-------------------------- templates/recipe.erb ---------------------------end<
+
+# >-------------------------- templates/recipe.erb ---------------------------start<
 # >---------------------------------[ tests ]---------------------------------<
 @current_recipe = "tests"
 @before_configs["tests"].call if @before_configs["tests"]
@@ -2007,107 +1416,6 @@ stage_three do
   end
 end
 # >---------------------------- recipes/tests.rb -----------------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
-# >---------------------------------[ email ]---------------------------------<
-@current_recipe = "email"
-@before_configs["email"].call if @before_configs["email"]
-say_recipe 'email'
-@configs[@current_recipe] = config
-# >---------------------------- recipes/email.rb -----------------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/email.rb
-
-stage_two do
-  say_wizard "recipe stage two"
-  unless prefer :email, 'none'
-    ## ACTIONMAILER CONFIG
-    dev_email_text = <<-TEXT
-  # ActionMailer Config
-  config.action_mailer.default_url_options = { :host => 'localhost:3000' }
-  config.action_mailer.delivery_method = :smtp
-  config.action_mailer.raise_delivery_errors = true
-  # Send email in development mode?
-  config.action_mailer.perform_deliveries = true
-TEXT
-    prod_email_text = <<-TEXT
-  # ActionMailer Config
-  config.action_mailer.default_url_options = { :host => 'example.com' }
-  config.action_mailer.delivery_method = :smtp
-  config.action_mailer.perform_deliveries = true
-  config.action_mailer.raise_delivery_errors = false
-TEXT
-    inject_into_file 'config/environments/development.rb', dev_email_text, :after => "config.assets.debug = true"
-    inject_into_file 'config/environments/production.rb', prod_email_text, :after => "config.active_support.deprecation = :notify"
-    gsub_file 'config/environments/production.rb', /'example.com'/, 'Rails.application.secrets.domain_name'
-    ## SMTP_SETTINGS
-    email_configuration_text = <<-TEXT
-\n
-  config.action_mailer.smtp_settings = {
-    address: "smtp.gmail.com",
-    port: 587,
-    domain: Rails.application.secrets.domain_name,
-    authentication: "plain",
-    enable_starttls_auto: true,
-    user_name: Rails.application.secrets.email_provider_username,
-    password: Rails.application.secrets.email_provider_password
-  }
-TEXT
-    inject_into_file 'config/environments/development.rb', email_configuration_text, :after => "config.assets.debug = true"
-    inject_into_file 'config/environments/production.rb', email_configuration_text, :after => "config.active_support.deprecation = :notify"
-    case prefs[:email]
-      when 'sendgrid'
-        gsub_file 'config/environments/development.rb', /smtp.gmail.com/, 'smtp.sendgrid.net'
-        gsub_file 'config/environments/production.rb', /smtp.gmail.com/, 'smtp.sendgrid.net'
-      when 'mandrill'
-        gsub_file 'config/environments/development.rb', /smtp.gmail.com/, 'smtp.mandrillapp.com'
-        gsub_file 'config/environments/production.rb', /smtp.gmail.com/, 'smtp.mandrillapp.com'
-        gsub_file 'config/environments/development.rb', /email_provider_password/, 'email_provider_apikey'
-        gsub_file 'config/environments/production.rb', /email_provider_password/, 'email_provider_apikey'
-    end
-  end
-  ### GIT
-  git :add => '-A' if prefer :git, true
-  git :commit => '-qm "rails_apps_composer: set email accounts"' if prefer :git, true
-end
-# >---------------------------- recipes/email.rb -----------------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
-# >--------------------------------[ devise ]---------------------------------<
-@current_recipe = "devise"
-@before_configs["devise"].call if @before_configs["devise"]
-say_recipe 'devise'
-@configs[@current_recipe] = config
-# >---------------------------- recipes/devise.rb ----------------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/devise.rb
-
-stage_two do
-  say_wizard "recipe stage two"
-  if prefer :authentication, 'devise'
-    # prevent logging of password_confirmation
-    gsub_file 'config/initializers/filter_parameter_logging.rb', /:password/, ':password, :password_confirmation'
-    generate 'devise:install'
-    generate 'devise_invitable:install' if prefer :devise_modules, 'invitable'
-    generate 'devise user' # create the User model
-    unless :apps4.to_s.include? 'rails-stripe-'
-      generate 'migration AddNameToUsers name:string'
-    end
-    if (prefer :devise_modules, 'confirmable') || (prefer :devise_modules, 'invitable')
-      gsub_file 'app/models/user.rb', /:registerable,/, ":registerable, :confirmable,"
-      generate 'migration AddConfirmableToUsers confirmation_token:string confirmed_at:datetime confirmation_sent_at:datetime unconfirmed_email:string'
-    end
-    run 'bundle exec rake db:migrate'
-  end
-  ### GIT ###
-  git :add => '-A' if prefer :git, true
-  git :commit => '-qm "rails_apps_composer: devise"' if prefer :git, true
-end
-# >---------------------------- recipes/devise.rb ----------------------------end<
 # >-------------------------- templates/recipe.erb ---------------------------end<
 
 # >-------------------------- templates/recipe.erb ---------------------------start<
@@ -2554,52 +1862,6 @@ end
 # >-------------------------- templates/recipe.erb ---------------------------end<
 
 # >-------------------------- templates/recipe.erb ---------------------------start<
-# >------------------------------[ deployment ]-------------------------------<
-@current_recipe = "deployment"
-@before_configs["deployment"].call if @before_configs["deployment"]
-say_recipe 'deployment'
-@configs[@current_recipe] = config
-# >-------------------------- recipes/deployment.rb --------------------------start<
-
-# Application template recipe for the rails_apps_composer. Change the recipe here:
-# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/deployment.rb
-
-prefs[:deployment] = multiple_choice "Prepare for deployment?", [["no", "none"],
-    ["Heroku", "heroku"],
-    ["Capistrano", "capistrano3"]] unless prefs.has_key? :deployment
-
-if prefer :deployment, 'heroku'
-  say_wizard "installing gems for Heroku"
-  if prefer :database, 'sqlite'
-    gsub_file 'Gemfile', /.*gem 'sqlite3'\n/, ''
-    add_gem 'sqlite3', group: [:development, :test]
-    add_gem 'pg', group: :production
-  end
-end
-
-if prefer :deployment, 'capistrano3'
-  say_wizard "installing gems for Capistrano"
-  add_gem 'capistrano', '~> 3.0.1', group: :development
-  add_gem 'capistrano-rvm', '~> 0.1.1', group: :development
-  add_gem 'capistrano-bundler', group: :development
-  add_gem 'capistrano-rails', '~> 1.1.0', group: :development
-  add_gem 'capistrano-rails-console', group: :development
-  stage_two do
-    say_wizard "recipe stage two"
-    say_wizard "installing Capistrano files"
-    run 'bundle exec cap install'
-  end
-end
-
-stage_three do
-  ### GIT ###
-  git :add => '-A' if prefer :git, true
-  git :commit => '-qm "rails_apps_composer: prepare for deployment"' if prefer :git, true
-end
-# >-------------------------- recipes/deployment.rb --------------------------end<
-# >-------------------------- templates/recipe.erb ---------------------------end<
-
-# >-------------------------- templates/recipe.erb ---------------------------start<
 # >--------------------------------[ extras ]---------------------------------<
 @current_recipe = "extras"
 @before_configs["extras"].call if @before_configs["extras"]
@@ -2769,6 +2031,139 @@ if prefs[:github]
   end
 end
 # >---------------------------- recipes/extras.rb ----------------------------end<
+# >-------------------------- templates/recipe.erb ---------------------------end<
+
+# >-------------------------- templates/recipe.erb ---------------------------start<
+# >------------------------------[ deployment ]-------------------------------<
+@current_recipe = "deployment"
+@before_configs["deployment"].call if @before_configs["deployment"]
+say_recipe 'deployment'
+@configs[@current_recipe] = config
+# >-------------------------- recipes/deployment.rb --------------------------start<
+
+# Application template recipe for the rails_apps_composer. Change the recipe here:
+# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/deployment.rb
+
+prefs[:deployment] = multiple_choice "Prepare for deployment?", [["no", "none"],
+    ["Heroku", "heroku"],
+    ["Capistrano", "capistrano3"]] unless prefs.has_key? :deployment
+
+if prefer :deployment, 'heroku'
+  say_wizard "installing gems for Heroku"
+  if prefer :database, 'sqlite'
+    gsub_file 'Gemfile', /.*gem 'sqlite3'\n/, ''
+    add_gem 'sqlite3', group: [:development, :test]
+    add_gem 'pg', group: :production
+  end
+end
+
+if prefer :deployment, 'capistrano3'
+  say_wizard "installing gems for Capistrano"
+  add_gem 'capistrano', '~> 3.0.1', group: :development
+  add_gem 'capistrano-rvm', '~> 0.1.1', group: :development
+  add_gem 'capistrano-bundler', group: :development
+  add_gem 'capistrano-rails', '~> 1.1.0', group: :development
+  add_gem 'capistrano-rails-console', group: :development
+  stage_two do
+    say_wizard "recipe stage two"
+    say_wizard "installing Capistrano files"
+    run 'bundle exec cap install'
+  end
+end
+
+stage_three do
+  ### GIT ###
+  git :add => '-A' if prefer :git, true
+  git :commit => '-qm "rails_apps_composer: prepare for deployment"' if prefer :git, true
+end
+# >-------------------------- recipes/deployment.rb --------------------------end<
+# >-------------------------- templates/recipe.erb ---------------------------end<
+
+# >-------------------------- templates/recipe.erb ---------------------------start<
+# >-------------------------------[ email_dev ]-------------------------------<
+@current_recipe = "email_dev"
+@before_configs["email_dev"].call if @before_configs["email_dev"]
+say_recipe 'email_dev'
+config = {}
+config['mailcatcher'] = yes_wizard?("Use Mailcatcher to catch sent emails in development and display in web interface?") if true && true unless config.key?('mailcatcher') || prefs.has_key?(:mailcatcher)
+config['mail_view'] = yes_wizard?("Add MailView routes to preview email layouts in development?") if true && true unless config.key?('mail_view') || prefs.has_key?(:mail_view)
+@configs[@current_recipe] = config
+# >-------------------------- recipes/email_dev.rb ---------------------------start<
+
+# Application template recipe for the rails_apps_composer. Change the recipe here:
+# https://github.com/RailsApps/rails_apps_composer/blob/master/recipes/email_dev.rb
+
+prefs[:mailcatcher] = true if config['mailcatcher']
+prefs[:mail_view] = true if config['mail_view']
+
+if prefs[:mailcatcher]
+  add_gem 'mailcatcher', group: :development
+end
+add_gem 'mail_view', group: :development if prefs[:mail_view]
+
+stage_two do
+  say_wizard "recipe stage two"
+  if prefs[:mailcatcher]
+    say_wizard "recipe installing mailcatcher"
+    create_file 'config/initializers/mailcatcher.rb' do <<-RUBY
+# Detect if mailcatcher is running and use that if available
+if Rails.env.development?
+  begin
+    sock = TCPSocket.new("localhost", 1025)
+    sock.close
+    catcher = true
+  rescue
+    catcher = false
+  end
+
+  if catcher
+    ActionMailer::Base.smtp_settings = { :host => "localhost", :port => '1025', }
+    ActionMailer::Base.perform_deliveries = true
+  end
+end
+RUBY
+    end
+    if prefer(:local_env_file, 'foreman') && File.exists?('Procfile.dev')
+      append_file 'Procfile.dev', "mail: mailcatcher --foreground\n"
+    end
+    ### GIT
+    git :add => '-A' if prefer :git, true
+    git :commit => '-qm "rails_apps_composer: set up mailcatcher for development"' if prefer :git, true
+  end
+  if prefs[:mail_view]
+    say_wizard "recipe installing mail_view"
+    create_file 'app/mailers/mail_preview.rb' do <<-RUBY
+class MailPreview < MailView
+  # Pull data from existing fixtures
+  #def invitation
+  #  account = Account.first
+  #  inviter, invitee = account.users[0, 2]
+  #  Notifier.invitation(inviter, invitee)
+  #end
+
+  # Factory-like pattern
+  #def welcome
+  #  user = User.create!
+  #  mail = Notifier.welcome(user)
+  #  user.destroy
+  #  mail
+  #end
+
+  # Stub-like
+  #def forgot_password
+  #  user = Struct.new(:email, :name).new('name@example.com', 'Jill Smith')
+  #  mail = UserMailer.forgot_password(user)
+  #end
+end
+RUBY
+    end
+    inject_into_file 'config/routes.rb', "mount MailPreview => 'mail_view' if Rails.env.development?", :before => "end"
+    ### GIT
+    git :add => '-A' if prefer :git, true
+    git :commit => '-qm "rails_apps_composer: set up mail_view for development"' if prefer :git, true
+  end
+end
+# >-------------------------- recipes/email_dev.rb ---------------------------end<
 # >-------------------------- templates/recipe.erb ---------------------------end<
 
 
